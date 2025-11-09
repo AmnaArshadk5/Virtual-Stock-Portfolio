@@ -1,751 +1,249 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Virtual Stock Portfolio</title>
-    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Load Ethers.js -->
+    <!-- Ethers v5 -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-    <!-- Load Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
+
     <style>
-/*
-|--------------------------------------------------------------------------
-| 1. CORE VARIABLES & THEME SETUP
-|--------------------------------------------------------------------------
-| Defines the semantic color palette, gradients, shadows, and radii.
-*/
-:root {
-    /* --- Color Palette (Tailwind-derived) --- */
-    --primary: #2563eb;       /* Blue */
-    --primary-dark: #1d4ed8;
-    --primary-light: #dbeafe; /* Pale Blue */
+    :root {
+        --primary: #2563eb;
+        --primary-dark: #1d4ed8;
+        --primary-light: #dbeafe;
+        --success: #10b981;
+        --success-dark: #059669;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --purple: #8b5cf6;
+        --pink: #ec4899;
 
-    --success: #10b981;       /* Green */
-    --success-dark: #059669;
-    --danger: #ef4444;        /* Red */
-    --warning: #f59e0b;       /* Amber */
-    --purple: #8b5cf6;
-    --pink: #ec4899;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-400: #9ca3af;
+        --gray-600: #6b7280;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
 
-    /* --- Neutral Palette --- */
-    --gray-50: #f9fafb;
-    --gray-100: #f3f4f6;
-    --gray-200: #e5e7eb;
-    --gray-400: #9ca3af;
-    --gray-600: #6b7280;
-    --gray-800: #1f2937; /* Dark text/headers */
-    --gray-900: #111827; /* Near Black text */
+        --gradient-background-light: linear-gradient(135deg, #f0f4f8 0%, #ffffff 100%);
+        --background-base: var(--gradient-background-light);
+        --text-primary: var(--gray-900);
+        --text-secondary: var(--gray-600);
+        --card-bg-light: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.9) 100%);
+        --card-bg: var(--card-bg-light);
 
-    /* --- Semantic Theme Variables (For easy theming) --- */
-    --gradient-background-light: linear-gradient(135deg, #f0f4f8 0%, #ffffff 100%); /* Subtle light background */
-    --background-base: var(--gradient-background-light); /* Enforcing light background */
-    --text-primary: var(--gray-900);
-    --text-secondary: var(--gray-600);
-    --card-bg-light: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.9) 100%); /* High transparency for glassy look */
-    --card-bg: var(--card-bg-light);
+        --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
 
-    /* --- Gradients (Kept for buttons/accents) --- */
-    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --shadow-glow: 0 0 24px rgba(37, 99, 235, 0.2);
 
-    /* --- Shadows --- */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    --shadow-glow: 0 0 24px rgba(37, 99, 235, 0.2); /* Enhanced glow for primary color */
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+        --radius-xl: 20px;
 
-    /* --- Border Radius --- */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
-    --radius-xl: 20px;
-}
-
-/*
-|--------------------------------------------------------------------------
-| 2. BASE STYLES & TYPOGRAPHY
-|--------------------------------------------------------------------------
-*/
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--background-base); /* Now using the light gradient */
-    min-height: 100vh;
-    color: var(--text-primary);
-    line-height: 1.6;
-    overflow-x: hidden;
-}
-
-html {
-    scroll-behavior: smooth;
-}
-
-/* App Container */
-.app-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 24px;
-    min-height: 100vh;
-    animation: fadeIn 0.8s ease-out; /* Apply initial animation */
-}
-
-/*
-|--------------------------------------------------------------------------
-| 3. HEADER & NAVIGATION
-|--------------------------------------------------------------------------
-*/
-.header {
-    background: var(--card-bg);
-    -webkit-backdrop-filter: blur(20px); /* For Safari support */
-
-    backdrop-filter: blur(20px);
-    
-    padding: 24px 32px;
-    border-radius: var(--radius-xl);
-    margin-bottom: 32px;
-    box-shadow: var(--shadow-xl);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    position: relative;
-    overflow: hidden;
-}
-
-/* Accent line at the top */
-.header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--primary), var(--purple), var(--pink));
-    z-index: 3;
-}
-
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-    z-index: 2;
-}
-
-.logo-icon {
-    width: 48px;
-    height: 48px;
-    background: var(--gradient-primary);
-    border-radius: var(--radius-lg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 24px;
-    box-shadow: var(--shadow-md);
-    transition: all 0.3s ease;
-}
-
-.logo-text h1 {
-    font-size: 32px;
-    font-weight: 800;
-    background: linear-gradient(135deg, var(--gray-800) 0%, var(--primary) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    letter-spacing: -0.5px;
-}
-
-.logo-text p {
-    color: var(--gray-600);
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.wallet-info {
-    background: var(--gray-50);
-    border: 1px solid var(--gray-200);
-    padding: 16px 20px;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    min-width: 200px;
-}
-
-.wallet-address {
-    font-family: 'Monaco', 'Consolas', 'JetBrains Mono', monospace;
-    font-size: 14px;
-    color: var(--gray-800);
-    margin-bottom: 8px;
-    font-weight: 600;
-}
-
-.wallet-balance {
-    font-size: 19px; /* Slightly larger */
-    font-weight: 800; /* Bolder */
-    color: var(--success);
-    background: var(--gradient-success);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| 4. LAYOUT & CARD STRUCTURE
-|--------------------------------------------------------------------------
-*/
-.main-grid {
-    display: grid;
-    grid-template-columns: 2fr 400px; /* Adjusted column ratio */
-    gap: 32px; /* Increased gap */
-    margin-bottom: 32px;
-}
-
-.card {
-    background: var(--card-bg);
-    -webkit-backdrop-filter: blur(20px);
-
-    backdrop-filter: blur(20px);
-
-    border-radius: var(--radius-xl);
-    padding: 32px; /* Increased padding */
-    box-shadow: var(--shadow-lg);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.card:hover {
-    transform: translateY(-6px); /* More pronounced hover effect */
-    box-shadow: var(--shadow-xl), var(--shadow-glow);
-}
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 2px solid var(--gray-100);
-}
-
-.card-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--gray-900);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.card-title i {
-    color: var(--primary);
-    font-size: 20px;
-}
-
-/*
-|--------------------------------------------------------------------------
-| 5. INTERACTIVE ELEMENTS (BUTTONS & FORMS)
-|--------------------------------------------------------------------------
-*/
-.btn {
-    padding: 16px 28px;
-    border: none;
-    border-radius: var(--radius-lg);
-    font-size: 16px;
-    font-weight: 700; /* Bolder text */
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    text-decoration: none;
-    font-family: inherit;
-    box-shadow: var(--shadow-md);
-}
-
-.btn-primary {
-    background: var(--gradient-primary);
-    color: white;
-}
-
-.btn-primary:hover {
-    transform: scale(1.02); /* Subtle scale effect */
-    box-shadow: var(--shadow-xl), 0 0 30px rgba(37, 99, 235, 0.5); /* Stronger primary glow */
-}
-
-.btn-success {
-    background: var(--gradient-success);
-    color: white;
-}
-
-.btn-success:hover {
-    transform: scale(1.02);
-}
-
-.btn-danger {
-    background: var(--gradient-danger);
-    color: white;
-}
-
-.btn-danger:hover {
-    transform: scale(1.02);
-}
-
-.btn-group {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-top: 8px;
-}
-
-.form-group {
-    margin-bottom: 24px;
-    position: relative;
-}
-
-.form-label {
-    display: block;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--gray-800);
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.form-control {
-    width: 100%;
-    padding: 18px 20px; /* Increased padding */
-    border: 1px solid var(--gray-300);
-    border-radius: var(--radius-lg);
-    background: var(--gray-50);
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05); /* Inset shadow for depth */
-    font-size: 16px;
-    transition: all 0.3s ease;
-    font-family: inherit;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15), var(--shadow-md);
-    background: white; /* Ensure white background on focus */
-}
-
-/*
-|--------------------------------------------------------------------------
-| 6. DATA & STATUS DISPLAY
-|--------------------------------------------------------------------------
-*/
-.portfolio-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Better responsiveness */
-    gap: 24px;
-}
-
-.stat-card {
-    background: white; /* Clearer background for stats */
-    padding: 24px;
-    border-radius: var(--radius-lg);
-    border-left: 6px solid var(--primary);
-    box-shadow: var(--shadow-md);
-    transition: all 0.3s ease;
-}
-
-.stat-value {
-    font-size: 36px; /* Larger value */
-    font-weight: 800;
-}
-
-.stat-label {
-    font-size: 14px;
-    color: var(--gray-600);
-    margin-bottom: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-
-/* Holdings Table: FIXING CONTRAST */
-.holdings-table {
-    width: 100%;
-    border-collapse: separate; /* Use separate for rounded corners */
-    border-spacing: 0;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow-md);
-    background: white;
-}
-
-.holdings-table th {
-    text-align: left;
-    padding: 18px 24px;
-    background: var(--primary); /* Use primary color for premium look */
-    font-weight: 600;
-    color: white; /* White text on primary background is high contrast */
-    border-bottom: none; 
-    text-transform: uppercase;
-    font-size: 13px;
-}
-
-.holdings-table td {
-    padding: 18px 24px;
-    border-bottom: 1px solid var(--gray-100);
-}
-
-.holdings-table tr:last-child td {
-    border-bottom: none; /* Clean up last row */
-}
-
-.holdings-table tr:hover td {
-    background: var(--primary-light);
-    cursor: pointer;
-}
-
-.positive {
-    background: var(--gradient-success);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-weight: 700;
-}
-
-.negative {
-    color: var(--danger);
-    font-weight: 700;
-}
-
-/* Status Bar */
-.status-bar {
-    background: var(--card-bg);
-    border-radius: var(--radius-xl); /* Larger radius */
-    border-left: 8px solid var(--primary); /* Thicker border */
-    padding: 24px 32px;
-    margin-top: 24px;
-    box-shadow: var(--shadow-md);
-}
-
-.status-icon {
-    min-width: 32px;
-    height: 32px;
-    font-size: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Custom Message Box */
-#message-box {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1000;
-    width: 320px;
-}
-.message {
-    padding: 16px;
-    border-radius: var(--radius-lg);
-    margin-bottom: 12px;
-    box-shadow: var(--shadow-lg);
-    border-left: 5px solid;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    opacity: 0;
-    animation: slideIn 0.3s forwards;
-    color: var(--gray-900);
-}
-.message.success {
-    background-color: var(--success-light);
-    border-left-color: var(--success);
-}
-.message.error {
-    background-color: var(--danger-light);
-    border-left-color: var(--danger);
-}
-.message.info {
-    background-color: var(--primary-light);
-    border-left-color: var(--primary);
-}
-.message .icon {
-    font-size: 18px;
-    min-width: 20px;
-}
-.message.success .icon { color: var(--success); }
-.message.error .icon { color: var(--danger); }
-.message.info .icon { color: var(--primary); }
-
-@keyframes slideIn {
-    to { opacity: 1; transform: translateX(0); }
-    from { opacity: 0; transform: translateX(100%); }
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| 7. ANIMATIONS & RESPONSIVENESS
-|--------------------------------------------------------------------------
-*/
-/* Fade In Animation (for initial page load) */
-@keyframes fadeIn {
-    from { 
-        opacity: 0; 
-        transform: translateY(20px); 
-    }
-    to { 
-        opacity: 1; 
-        transform: translateY(0); 
-    }
-}
-
-/* Responsive Overrides */
-@media (max-width: 968px) {
-    .main-grid {
-        grid-template-columns: 1fr;
-        gap: 24px;
-    }
-    
-    .header-content {
-        flex-direction: column;
-        gap: 24px;
-        text-align: center;
-    }
-    
-    .wallet-info {
-        width: 100%;
-        max-width: 320px;
-    }
-}
-
-@media (max-width: 768px) {
-    .app-container {
-        padding: 16px;
-    }
-    
-    .header {
-        padding: 16px 20px;
-    }
-    
-    .card {
-        padding: 20px;
-    }
-    
-    .holdings-table th,
-    .holdings-table td {
-        padding: 14px 16px;
-        font-size: 14px;
+        /* Added missing message background variables */
+        --success-light: rgba(16,185,129,0.08);
+        --danger-light: rgba(239,68,68,0.08);
     }
 
-    .btn-group {
-        grid-template-columns: 1fr;
-        gap: 12px;
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+        font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        background: var(--background-base);
+        min-height:100vh;
+        color:var(--text-primary);
+        line-height:1.6;
+        overflow-x:hidden;
     }
-}
+    html { scroll-behavior:smooth; }
+
+    .app-container { max-width:1400px; margin:0 auto; padding:24px; min-height:100vh; animation: fadeIn 0.6s ease-out; }
+
+    .header { background:var(--card-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding:24px 32px; border-radius:var(--radius-xl); margin-bottom:32px; box-shadow:var(--shadow-xl); border:1px solid rgba(255,255,255,0.3); position:relative; overflow:hidden;}
+    .header::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background: linear-gradient(90deg, var(--primary), var(--purple), var(--pink)); z-index:3; }
+    .header-content { display:flex; justify-content:space-between; align-items:center; position:relative; z-index:2; }
+
+    .logo-icon { width:48px; height:48px; background:var(--gradient-primary); border-radius:var(--radius-lg); display:flex; align-items:center; justify-content:center; color:white; font-size:24px; box-shadow:var(--shadow-md); transition:all .3s ease; }
+    .logo-text h1 { font-size:32px; font-weight:800; background: linear-gradient(135deg, var(--gray-800) 0%, var(--primary) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; letter-spacing:-0.5px;}
+    .logo-text p { color:var(--gray-600); font-size:14px; font-weight:500; }
+
+    .wallet-info { background:var(--gray-50); border:1px solid var(--gray-200); padding:16px 20px; border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); min-width:200px; }
+    .wallet-address { font-family: 'Monaco', monospace; font-size:14px; color:var(--gray-800); margin-bottom:8px; font-weight:600; text-align:right; }
+    .wallet-balance { font-size:19px; font-weight:800; color:var(--success); background:var(--gradient-success); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; text-align:right; }
+
+    .main-grid { display:grid; grid-template-columns: 2fr 400px; gap:32px; margin-bottom:32px; }
+    .card { background:var(--card-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius:var(--radius-xl); padding:32px; box-shadow:var(--shadow-lg); border:1px solid rgba(255,255,255,0.3); transition:all .3s ease; position:relative; overflow:hidden; }
+    .card:hover { transform: translateY(-6px); box-shadow: var(--shadow-xl), var(--shadow-glow); }
+
+    .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; padding-bottom:16px; border-bottom:2px solid var(--gray-100); }
+    .card-title { font-size:20px; font-weight:700; color:var(--gray-900); display:flex; align-items:center; gap:12px; }
+    .card-title i { color:var(--primary); font-size:20px; }
+
+    .btn { padding:12px 18px; border:none; border-radius:var(--radius-lg); font-size:14px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:10px; transition:all .2s ease; position:relative; overflow:hidden; text-decoration:none; font-family:inherit; box-shadow:var(--shadow-md); }
+    .btn-primary { background:var(--gradient-primary); color:white; }
+    .btn-success { background:var(--gradient-success); color:white; }
+    .btn-danger { background:var(--gradient-danger); color:white; }
+
+    .btn-group { display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:8px; }
+    .form-group { margin-bottom:24px; position:relative; }
+    .form-label { display:block; font-size:14px; font-weight:600; color:var(--gray-800); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px; }
+    .form-control { width:100%; padding:12px 14px; border:1px solid var(--gray-300); border-radius:var(--radius-lg); background:var(--gray-50); box-shadow: inset 0 1px 3px rgba(0,0,0,0.03); font-size:16px; transition:all .2s ease; }
+    .form-control:focus { outline:none; border-color:var(--primary); box-shadow: 0 0 0 4px rgba(37,99,235,0.12), var(--shadow-md); background:white; }
+
+    .portfolio-stats { display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:24px; }
+    .stat-card { background:white; padding:24px; border-radius:var(--radius-lg); border-left:6px solid var(--primary); box-shadow:var(--shadow-md); transition:all .2s ease; }
+    .stat-value { font-size:36px; font-weight:800; }
+    .stat-label { font-size:14px; color:var(--gray-600); margin-bottom:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+
+    .holdings-table { width:100%; border-collapse: separate; border-spacing:0; border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--shadow-md); background:white; }
+    .holdings-table th { text-align:left; padding:18px 24px; background:var(--primary); font-weight:600; color:white; border-bottom:none; text-transform:uppercase; font-size:13px; }
+    .holdings-table td { padding:18px 24px; border-bottom:1px solid var(--gray-100); }
+    .holdings-table tr:last-child td { border-bottom:none; }
+    .holdings-table tr:hover td { background: var(--primary-light); cursor:pointer; }
+    .positive { background: var(--gradient-success); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; font-weight:700; }
+    .negative { color: var(--danger); font-weight:700; }
+
+    .status-bar { background: var(--card-bg); border-radius:var(--radius-xl); border-left:8px solid var(--primary); padding:24px 32px; margin-top:24px; box-shadow:var(--shadow-md); }
+    #message-box { position: fixed; top:20px; right:20px; z-index:1000; width:320px; }
+    .message { padding:16px; border-radius:var(--radius-lg); margin-bottom:12px; box-shadow:var(--shadow-lg); border-left:5px solid; display:flex; align-items:center; gap:12px; opacity:0; animation: slideIn 0.25s forwards; color:var(--gray-900); }
+    .message.success { background-color: var(--success-light); border-left-color: var(--success); }
+    .message.error { background-color: var(--danger-light); border-left-color: var(--danger); }
+    .message.info { background-color: var(--primary-light); border-left-color: var(--primary); }
+    .message .icon { font-size:18px; min-width:20px; }
+    .message.success .icon { color: var(--success); }
+    .message.error .icon { color: var(--danger); }
+    .message.info .icon { color: var(--primary); }
+
+    @keyframes slideIn { to { opacity:1; transform:translateX(0); } from { opacity:0; transform:translateX(100%); } }
+    @keyframes fadeIn { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: translateY(0); } }
+
+    @media (max-width: 968px) {
+        .main-grid { grid-template-columns: 1fr; gap:24px; }
+        .header-content { flex-direction:column; gap:24px; text-align:center; }
+        .wallet-info { width:100%; max-width:320px; }
+    }
+    @media (max-width: 768px) {
+        .app-container { padding:16px; }
+        .header { padding:16px 20px; }
+        .card { padding:20px; }
+        .holdings-table th, .holdings-table td { padding:14px 16px; font-size:14px; }
+        .btn-group { grid-template-columns: 1fr; gap:12px; }
+    }
     </style>
 </head>
 <body class="bg-gray-100">
-
-    <!-- Custom Message Box Container -->
     <div id="message-box"></div>
 
     <div class="app-container">
-        <!-- Header -->
         <header class="header">
             <div class="header-content">
                 <div class="logo flex items-center gap-4">
-                    <div class="logo-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
+                    <div class="logo-icon"><i class="fas fa-chart-line"></i></div>
                     <div class="logo-text">
                         <h1 id="app-title">Virtual Stock Portfolio</h1>
                         <p>Professional Trading Platform</p>
                     </div>
                 </div>
                 <div class="wallet-info" id="wallet-display">
-                    <div id="wallet-address" class="wallet-address text-right truncate">... Connect Wallet ...</div>
-                    <div id="eth-balance" class="wallet-balance text-right">0.00 ETH</div>
+                    <div id="wallet-address" class="wallet-address truncate">... Connect Wallet ...</div>
+                    <div id="eth-balance" class="wallet-balance">0.00 ETH</div>
                 </div>
             </div>
         </header>
 
-        <!-- Main Grid -->
         <main class="main-grid">
-            
-            <!-- Left Column: Portfolio & Trading -->
             <div class="left-column">
-                
-                <!-- Portfolio Overview -->
                 <div class="card mb-8">
                     <div class="card-header">
-                        <h2 class="card-title">
-                            <i class="fas fa-chart-pie"></i>
-                            Portfolio Overview
-                        </h2>
-                        <button id="refresh-data" class="btn btn-primary py-2 px-4 text-sm font-medium" disabled>
-                            <i class="fas fa-sync-alt"></i> Refresh
-                        </button>
+                        <h2 class="card-title"><i class="fas fa-chart-pie"></i> Portfolio Overview</h2>
+                        <button id="refresh-data" class="btn btn-primary py-2 px-4 text-sm font-medium" disabled><i class="fas fa-sync-alt"></i> Refresh</button>
                     </div>
-
                     <div id="portfolio-stats" class="portfolio-stats">
-                        <div class="stat-card">
-                            <div class="stat-label">Virtual Cash Balance</div>
-                            <div id="cash-balance" class="stat-value text-gray-900">$0.00</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">Portfolio Value</div>
-                            <div id="portfolio-value" class="stat-value text-primary">$0.00</div>
-                        </div>
+                        <div class="stat-card"><div class="stat-label">Virtual Cash Balance</div><div id="cash-balance" class="stat-value text-gray-900">$0.00</div></div>
+                        <div class="stat-card"><div class="stat-label">Portfolio Value</div><div id="portfolio-value" class="stat-value text-primary">$0.00</div></div>
                     </div>
-                    
                     <div class="btn-group mt-6">
-                        <button id="register-account" class="btn btn-primary" disabled>
-                            <i class="fas fa-user-plus"></i> Register Account
-                        </button>
-                        <button id="deposit-cash" class="btn btn-success" disabled>
-                            <i class="fas fa-dollar-sign"></i> Deposit $500
-                        </button>
+                        <button id="register-account" class="btn btn-primary" disabled><i class="fas fa-user-plus"></i> Register Account</button>
+                        <button id="deposit-cash" class="btn btn-success" disabled><i class="fas fa-dollar-sign"></i> Deposit $500</button>
                     </div>
                 </div>
 
-                <!-- Trade Stocks Card -->
                 <div class="card mb-8">
                     <div class="card-header">
-                        <h2 class="card-title">
-                            <i class="fas fa-exchange-alt"></i>
-                            Trade Stocks
-                        </h2>
+                        <h2 class="card-title"><i class="fas fa-exchange-alt"></i> Trade Stocks</h2>
                     </div>
-                    
                     <div class="form-group">
                         <label for="stock-select" class="form-label">Select Stock</label>
                         <select id="stock-select" class="form-control" disabled>
                             <option value="" disabled selected>Select a stock...</option>
-                            <!-- Stock options will be dynamically added here -->
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label for="quantity-input" class="form-label">Quantity</label>
-                        <input type="number" id="quantity-input" class="form-control" placeholder="0" min="1" disabled>
+                        <input type="number" id="quantity-input" class="form-control" placeholder="0" min="1" disabled />
                     </div>
-                    
+
                     <div class="btn-group">
-                        <button id="buy-stock" class="btn btn-primary" disabled>
-                            <i class="fas fa-arrow-up"></i> Buy Stock
-                        </button>
-                        <button id="sell-stock" class="btn btn-danger" disabled>
-                            <i class="fas fa-arrow-down"></i> Sell Stock
-                        </button>
+                        <button id="buy-stock" class="btn btn-primary" disabled><i class="fas fa-arrow-up"></i> Buy Stock</button>
+                        <button id="sell-stock" class="btn btn-danger" disabled><i class="fas fa-arrow-down"></i> Sell Stock</button>
                     </div>
                 </div>
 
-                <!-- Holdings Table -->
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">
-                            <i class="fas fa-briefcase"></i>
-                            Your Holdings
-                        </h2>
+                        <h2 class="card-title"><i class="fas fa-briefcase"></i> Your Holdings</h2>
                     </div>
-
                     <div id="holdings-container">
                         <table class="holdings-table">
                             <thead>
-                                <tr>
-                                    <th>Symbol</th>
-                                    <th>Quantity</th>
-                                    <th>Current Price</th>
-                                    <th>Total Value</th>
-                                </tr>
+                                <tr><th>Symbol</th><th>Quantity</th><th>Current Price</th><th>Total Value</th></tr>
                             </thead>
                             <tbody id="holdings-table-body">
-                                <!-- Holdings rows dynamically inserted here -->
-                                <tr>
-                                    <td colspan="4">
-                                        <div class="empty-holdings text-center py-10 text-gray-500">
-                                            <i class="fas fa-box-open"></i>
-                                            <p>No holdings yet. Start trading to build your portfolio.</p>
-                                        </div>
-                                    </td>
-                                </tr>
+                                <tr><td colspan="4"><div class="empty-holdings text-center py-10 text-gray-500"><i class="fas fa-box-open"></i><p>No holdings yet. Start trading to build your portfolio.</p></div></td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Column: Actions & Connection -->
             <div class="right-column">
-                <!-- Connection Status -->
                 <div class="card mb-8">
-                    <div class="card-header !border-b-0 !pb-0">
-                        <h2 class="card-title">
-                            <i class="fas fa-link"></i>
-                            Connection
-                        </h2>
-                    </div>
+                    <div class="card-header !border-b-0 !pb-0"><h2 class="card-title"><i class="fas fa-link"></i> Connection</h2></div>
                     <div class="btn-group mt-4">
-                        <button id="connect-wallet" class="btn btn-primary">
-                            <i class="fab fa-ethereum"></i> Connect MetaMask
-                        </button>
-                        <button id="load-contract" class="btn btn-success" disabled>
-                            <i class="fas fa-cloud-download-alt"></i> Load Contract
-                        </button>
+                        <button id="connect-wallet" class="btn btn-primary"><i class="fab fa-ethereum"></i> Connect MetaMask</button>
+                        <button id="load-contract" class="btn btn-success" disabled><i class="fas fa-cloud-download-alt"></i> Load Contract</button>
                     </div>
-                    <button id="switch-sepolia" class="btn btn-primary w-full mt-4" disabled>
-                        <i class="fas fa-network-wired"></i> Switch to Sepolia
-                    </button>
+                    <button id="switch-sepolia" class="btn btn-primary w-full mt-4" disabled><i class="fas fa-network-wired"></i> Switch to Sepolia</button>
                 </div>
-                
-                <!-- Quick Actions -->
+
                 <div class="card mb-8">
-                    <div class="card-header !border-b-0 !pb-0">
-                        <h2 class="card-title">
-                            <i class="fas fa-bolt"></i>
-                            Quick Actions
-                        </h2 >
-                    </div>
+                    <div class="card-header !border-b-0 !pb-0"><h2 class="card-title"><i class="fas fa-bolt"></i> Quick Actions</h2></div>
                     <div class="action-card mt-4">
                         <h3>Check Balance</h3>
                         <p class="text-xs">Verify your current virtual cash balance from the contract.</p>
-                        <button id="check-balance-btn" class="btn btn-primary py-3" disabled>
-                            <i class="fas fa-money-check-alt"></i> Check Balance
-                        </button>
+                        <button id="check-balance-btn" class="btn btn-primary py-3" disabled><i class="fas fa-money-check-alt"></i> Check Balance</button>
                     </div>
                     <div class="action-card mt-4">
                         <h3>Reset Portfolio</h3>
                         <p class="text-xs">Reset your portfolio to initial state (requires a contract function).</p>
-                        <button id="reset-portfolio-btn" class="btn btn-danger py-3" disabled>
-                            <i class="fas fa-undo"></i> Reset Portfolio
-                        </button>
+                        <button id="reset-portfolio-btn" class="btn btn-danger py-3" disabled><i class="fas fa-undo"></i> Reset Portfolio</button>
                     </div>
                 </div>
 
-                <!-- Contract Info -->
                 <div class="card">
-                    <div class="card-header !border-b-0 !pb-0">
-                        <h2 class="card-title">
-                            <i class="fas fa-info-circle"></i>
-                            Contract Info
-                        </h2>
-                    </div>
+                    <div class="card-header !border-b-0 !pb-0"><h2 class="card-title"><i class="fas fa-info-circle"></i> Contract Info</h2></div>
                     <p class="form-label mt-4">Address:</p>
                     <div class="contract-address text-gray-700">
                         <span id="contract-address-display">0xa29Ac49e928B1CCBEFCc14fc3231197e679a8344</span>
@@ -756,407 +254,380 @@ html {
     </div>
 
     <script>
-        // --- Globals ---
-        let provider;
-        let signer;
-        let contract;
-        let userAddress = '';
-        const CONTRACT_ADDRESS = '0xa29Ac49e928B1CCBEFCc14fc3231197e679a8344';
-        const MOCK_STOCK_PRICES = {
-            'AAPL': 1000, // $10.00 (in cents)
-            'GOOG': 2000, // $20.00
-            'TSLA': 2500, // $25.00
-            'MSFT': 1500  // $15.00
-        };
+    // Globals
+    let provider;
+    let signer;
+    let contract;
+    let userAddress = '';
+    const CONTRACT_ADDRESS = '0xa29Ac49e928B1CCBEFCc14fc3231197e679a8344';
 
-        // --- Mock ABI (Must match your Solidity contract functions) ---
-        const CONTRACT_ABI = [
-            { "inputs": [], "name": "registerAccount", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-            { "inputs": [], "name": "deposit", "outputs": [], "stateMutability": "payable", "type": "function" },
-            { "inputs": [ { "internalType": "string", "name": "symbol", "type": "string" }, { "internalType": "uint256", "name": "quantity", "type": "uint256" } ], "name": "buyStock", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-            { "inputs": [ { "internalType": "string", "name": "symbol", "type": "string" }, { "internalType": "uint256", "name": "quantity", "type": "uint256" } ], "name": "sellStock", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-            // MOCK: Assuming getHoldings returns a tuple array
-            { "inputs": [ { "internalType": "address", "name": "user", "type": "address" } ], "name": "getHoldings", "outputs": [ { "components": [ { "internalType": "string", "name": "symbol", "type": "string" }, { "internalType": "uint256", "name": "quantity", "type": "uint256" }, { "internalType": "uint256", "name": "purchasePrice", "type": "uint256" } ], "internalType": "tuple[]", "name": "holdings", "type": "tuple[]" } ], "stateMutability": "view", "type": "function" },
-            // MOCK: Assuming getPortfolioStats returns cash/value/registered status
-            { "inputs": [ { "internalType": "address", "name": "user", "type": "address" } ], "name": "getPortfolioStats", "outputs": [ { "internalType": "uint256", "name": "virtualCash", "type": "uint256" }, { "internalType": "uint256", "name": "portfolioValue", "type": "uint256" }, { "internalType": "bool", "name": "isRegistered", "type": "bool" } ], "stateMutability": "view", "type": "function" },
-            // MOCK: Function to get stock prices in cents
-            { "inputs": [ { "internalType": "string", "name": "symbol", "type": "string" } ], "name": "getStockPrice", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-        ];
+    const MOCK_STOCK_PRICES = { 'AAPL': 1000, 'GOOG': 2000, 'TSLA': 2500, 'MSFT': 1500 };
 
+    // Mock client-side state (cents)
+    let mockVirtualCashBalance = (typeof ethers !== 'undefined') ? ethers.BigNumber.from(0) : { isZero: () => true, toString: () => '0' };
+    let mockIsRegistered = false;
+    let mockHoldings = [];
 
-        // --- Utility Functions ---
+    // Minimal ABI
+    const CONTRACT_ABI = [
+        { "inputs": [], "name": "registerAccount", "outputs": [], "stateMutability":"nonpayable","type":"function" },
+        { "inputs": [], "name": "deposit", "outputs": [], "stateMutability":"payable","type":"function" },
+        { "inputs":[{"internalType":"string","name":"symbol","type":"string"},{"internalType":"uint256","name":"quantity","type":"uint256"}],"name":"buyStock","outputs":[],"stateMutability":"nonpayable","type":"function"},
+        { "inputs":[{"internalType":"string","name":"symbol","type":"string"},{"internalType":"uint256","name":"quantity","type":"uint256"}],"name":"sellStock","outputs":[],"stateMutability":"nonpayable","type":"function"},
+        { "inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getHoldings","outputs":[{"components":[{"internalType":"string","name":"symbol","type":"string"},{"internalType":"uint256","name":"quantity","type":"uint256"},{"internalType":"uint256","name":"purchasePrice","type":"uint256"}],"internalType":"tuple[]","name":"holdings","type":"tuple[]"}],"stateMutability":"view","type":"function"},
+        { "inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getPortfolioStats","outputs":[{"internalType":"uint256","name":"virtualCash","type":"uint256"},{"internalType":"uint256","name":"portfolioValue","type":"uint256"},{"internalType":"bool","name":"isRegistered","type":"bool"}],"stateMutability":"view","type":"function"},
+        { "inputs":[{"internalType":"string","name":"symbol","type":"string"}],"name":"getStockPrice","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
+    ];
 
-        /**
-         * Displays a transient message to the user.
-         * @param {string} text The message content.
-         * @param {string} type 'success', 'error', or 'info'.
-         */
-        function showMessage(text, type = 'info') {
+    // Utilities
+    function showMessage(text, type='info') {
+        try {
             const box = document.getElementById('message-box');
             const messageEl = document.createElement('div');
             messageEl.classList.add('message', type);
-            let iconClass = '';
-            if (type === 'success') iconClass = 'fas fa-check-circle';
-            else if (type === 'error') iconClass = 'fas fa-times-circle';
-            else iconClass = 'fas fa-info-circle';
-
+            let iconClass = (type === 'success') ? 'fas fa-check-circle' : (type === 'error') ? 'fas fa-times-circle' : 'fas fa-info-circle';
             messageEl.innerHTML = `<span class="icon"><i class="${iconClass}"></i></span><span>${text}</span>`;
-            
             box.appendChild(messageEl);
+            setTimeout(() => { messageEl.style.opacity = '0'; messageEl.style.transform = 'translateX(100%)'; setTimeout(() => messageEl.remove(),300); }, 4500);
+        } catch (e) { console.warn('showMessage failed', e); }
+    }
 
-            setTimeout(() => {
-                messageEl.style.opacity = '0';
-                messageEl.style.transform = 'translateX(100%)';
-                setTimeout(() => messageEl.remove(), 300);
-            }, 5000);
+    function formatUSD(amount) {
+        if (typeof ethers === 'undefined') {
+            // fallback for numbers
+            if (amount == null || amount == 0) return '$0.00';
+            const n = Number(amount) / 100;
+            return `$${n.toFixed(2)}`;
         }
+        const amountBN = ethers.BigNumber.from(amount || 0);
+        if (amountBN.isZero()) return '$0.00';
+        const value = ethers.utils.formatUnits(amountBN, 2); // cents -> dollars
+        return `$${parseFloat(value).toFixed(2)}`;
+    }
 
-        /**
-         * Formats a large number (wei/cents) into a USD string.
-         * Assumes 2 decimal places (cents) for virtual cash.
-         * @param {ethers.BigNumber | number} amount
-         * @returns {string} Formatted USD string.
-         */
-        function formatUSD(amount) {
-            // Ensure amount is BigNumber if it's not already, and handle null/zero
-            const amountBN = ethers.BigNumber.from(amount || 0);
-            if (amountBN.isZero()) return '$0.00';
-            
-            // To format cents (amount) into dollars (value / 100), Ethers.js helper for Gwei is handy here.
-            // 100 Gwei is 10^-7 ether, which gives us 10^-2 dollars if we pretend it's dollars.
-            const value = ethers.utils.formatUnits(amountBN, 2);
-            return `$${parseFloat(value).toFixed(2)}`;
-        }
+    function formatETH(balance) {
+        if (typeof ethers === 'undefined' || !balance) return '0.0000 ETH';
+        return `${parseFloat(ethers.utils.formatEther(balance)).toFixed(4)} ETH`;
+    }
 
-        /**
-         * Format an ETH balance from Wei to ETH string.
-         * @param {ethers.BigNumber} balance
-         * @returns {string} Formatted ETH string.
-         */
-        function formatETH(balance) {
-            if (!balance) return '0.00 ETH';
-            return `${parseFloat(ethers.utils.formatEther(balance)).toFixed(4)} ETH`;
-        }
-        
-        /**
-         * Toggles the disabled state of all trading-related controls.
-         * @param {boolean} disabled
-         */
-        function toggleTradingControls(disabled) {
-            document.getElementById('refresh-data').disabled = disabled;
-            document.getElementById('deposit-cash').disabled = disabled;
-            document.getElementById('stock-select').disabled = disabled;
-            document.getElementById('quantity-input').disabled = disabled;
-            document.getElementById('buy-stock').disabled = disabled;
-            document.getElementById('sell-stock').disabled = disabled;
-            document.getElementById('check-balance-btn').disabled = disabled;
-            document.getElementById('reset-portfolio-btn').disabled = disabled;
-        }
+    // New: toggleTradingControls(enabled) -> enabled = true allows interaction (subject to registration)
+    function toggleTradingControls(enabled) {
+        const disabled = !enabled;
+        document.getElementById('refresh-data').disabled = disabled;
+        document.getElementById('stock-select').disabled = disabled;
+        document.getElementById('quantity-input').disabled = disabled;
+        document.getElementById('buy-stock').disabled = disabled;
+        document.getElementById('sell-stock').disabled = disabled;
+        document.getElementById('check-balance-btn').disabled = disabled;
+        document.getElementById('reset-portfolio-btn').disabled = disabled;
 
-        // --- Ethers & Contract Interaction Functions ---
+        // Register should be available when contract loaded (enabled true) and not registered yet
+        document.getElementById('register-account').disabled = disabled || mockIsRegistered;
 
-        async function connectWallet() {
-            if (typeof window.ethereum === 'undefined') {
-                showMessage("MetaMask not detected. Please install it to use this dApp.", 'error');
-                return;
-            }
+        // Deposit only when enabled AND registered
+        document.getElementById('deposit-cash').disabled = disabled || !mockIsRegistered;
+    }
 
-            try {
-                // Request account access
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                userAddress = accounts[0];
-                
-                // Initialize Ethers provider and signer
-                provider = new ethers.providers.Web3Provider(window.ethereum);
-                signer = provider.getSigner();
-
-                // Update UI with address and balance
-                document.getElementById('wallet-address').textContent = `${userAddress.substring(0, 10)}...${userAddress.substring(userAddress.length - 6)}`;
-                
-                const ethBalance = await provider.getBalance(userAddress);
-                document.getElementById('eth-balance').textContent = formatETH(ethBalance);
-
-                showMessage("Wallet connected successfully!", 'success');
-                
-                // Enable load contract button
-                document.getElementById('load-contract').disabled = false;
-                document.getElementById('connect-wallet').disabled = true;
-
-                // Set up chain change listener
-                window.ethereum.on('chainChanged', (chainId) => {
-                    showMessage(`Network switched to chain ID: ${chainId}`, 'info');
-                    // Re-initialize Ethers and data on network change
-                    window.location.reload(); 
-                });
-
-                window.ethereum.on('accountsChanged', (accounts) => {
-                    showMessage("Account changed. Reloading...", 'info');
-                    window.location.reload(); 
-                });
-
-            } catch (error) {
-                showMessage(`Wallet connection failed: ${error.message}`, 'error');
-            }
-        }
-
-        async function loadContract() {
-            if (!signer) {
-                showMessage("Please connect your wallet first.", 'error');
-                return;
-            }
-            
-            try {
-                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-                showMessage("Contract loaded successfully!", 'success');
-                
-                // Enable trading controls and refresh data
-                toggleTradingControls(false);
-                document.getElementById('load-contract').disabled = true;
-
-                // Load initial data
-                await updateAllData();
-
-            } catch (error) {
-                showMessage(`Contract loading failed. Check network or ABI: ${error.message}`, 'error');
-            }
-        }
-
-        async function updateAllData() {
-            if (!contract || !userAddress) return;
-
-            // 1. Update ETH Balance
-            try {
-                const ethBalance = await provider.getBalance(userAddress);
-                document.getElementById('eth-balance').textContent = formatETH(ethBalance);
-            } catch(e) { console.error("Could not fetch ETH balance:", e); }
-
-            // 2. Update Portfolio Stats
-            try {
-                // This call may fail if the user is not registered. We handle the fallback.
-                const [virtualCash, portfolioValue, isRegistered] = await contract.getPortfolioStats(userAddress);
-                document.getElementById('cash-balance').textContent = formatUSD(virtualCash);
-                document.getElementById('portfolio-value').textContent = formatUSD(portfolioValue);
-
-                if (isRegistered) {
-                    document.getElementById('register-account').disabled = true;
-                    document.getElementById('register-account').textContent = 'Account Registered';
-                } else {
-                    document.getElementById('register-account').disabled = false;
-                    document.getElementById('register-account').textContent = 'Register Account';
-                }
-            } catch (e) {
-                // Fallback UI if contract read fails (e.g., account not initialized)
-                console.warn("Could not fetch portfolio stats (Likely unregistered):", e);
-                document.getElementById('cash-balance').textContent = '$0.00';
-                document.getElementById('portfolio-value').textContent = '$0.00';
-            }
-
-            // 3. Update Holdings (The fix for holdings not updating)
-            await updateHoldings();
-        }
-
-        async function updateHoldings() {
-            if (!contract || !userAddress) return;
-
-            const tbody = document.getElementById('holdings-table-body');
-            tbody.innerHTML = ''; // Clear existing rows
-
-            try {
-                const holdings = await contract.getHoldings(userAddress);
-
-                if (holdings.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4"><div class="empty-holdings text-center py-10 text-gray-500"><i class="fas fa-box-open"></i><p>No holdings yet. Start trading to build your portfolio.</p></div></td></tr>`;
-                    return;
-                }
-
-                // Iterate over holdings and populate the table
-                holdings.forEach(holding => {
-                    const symbol = holding.symbol;
-                    // FIX: Ensure BigNumber is handled when calculating and formatting
-                    const quantity = holding.quantity.toString(); 
-                    
-                    // MOCK: Get current price from local mock
-                    const currentPriceCents = MOCK_STOCK_PRICES[symbol] || 0;
-                    
-                    // CRITICAL FIX: To multiply two values, they must both be BigNumber
-                    const priceBN = ethers.BigNumber.from(currentPriceCents);
-                    const totalValueCentsBN = holding.quantity.mul(priceBN);
-
-                    const row = tbody.insertRow();
-                    row.innerHTML = `
-                        <td class="font-semibold">${symbol}</td>
-                        <td>${quantity}</td>
-                        <td>${formatUSD(priceBN)}</td>
-                        <td class="positive">${formatUSD(totalValueCentsBN)}</td>
-                    `;
-
-                    // Add click listener to autofill the trading form
-                    row.addEventListener('click', () => {
-                        document.getElementById('stock-select').value = symbol;
-                        document.getElementById('quantity-input').value = quantity;
-                        showMessage(`Trading form autofilled for ${symbol}.`, 'info');
-                    });
-                });
-
-            } catch (e) {
-                console.error("Error fetching holdings:", e);
-                tbody.innerHTML = `<tr><td colspan="4"><div class="empty-holdings text-center py-10 text-gray-500"><i class="fas fa-exclamation-triangle"></i><p>Error loading holdings. (Check if contract is loaded or account is registered)</p></div></td></tr>`;
-            }
-        }
-        
-        // --- Transaction Handlers ---
-
-        async function handleSell() {
-            const symbol = document.getElementById('stock-select').value;
-            const quantity = parseInt(document.getElementById('quantity-input').value);
-
-            if (!symbol || quantity <= 0 || isNaN(quantity)) {
-                showMessage("Please select a stock and enter a valid quantity (greater than zero).", 'warning');
-                return;
-            }
-
-            try {
-                showMessage(`Attempting to sell ${quantity} of ${symbol}...`, 'info');
-                
-                // CRITICAL FIX: Convert JavaScript number to BigNumber for contract input
-                const quantityBigNumber = ethers.BigNumber.from(quantity);
-                
-                // Call the contract function
-                const tx = await contract.sellStock(symbol, quantityBigNumber);
-                
-                // Wait for the transaction to be mined
-                const receipt = await tx.wait();
-                
-                showMessage(`Sell successful! Transaction hash: ${receipt.transactionHash.substring(0, 10)}...`, 'success');
-
-                // FIX: Update UI immediately after successful transaction
-                await updateAllData(); 
-
-            } catch (error) {
-                console.error("Sell Transaction Failed:", error);
-                
-                // Enhanced Error Handling for Execution Reverted
-                if (error.code === 'UNPREDICTABLE_GAS_LIMIT' || (error.message && error.message.includes('execution reverted'))) {
-                    showMessage(`Sell failed: Execution reverted. This means the contract rejected the sale, likely because you do not own enough ${symbol} stock, or your account is not registered.`, 'error');
-                } else if (error.code === 4001) {
-                    showMessage("Transaction rejected by user (MetaMask).", 'warning');
-                } else {
-                    showMessage(`An unexpected error occurred: ${error.message.substring(0, 80)}...`, 'error');
-                }
-            }
-        }
-
-        async function handleBuy() {
-            const symbol = document.getElementById('stock-select').value;
-            const quantity = parseInt(document.getElementById('quantity-input').value);
-
-            if (!symbol || quantity <= 0 || isNaN(quantity)) {
-                showMessage("Please select a stock and enter a valid quantity.", 'warning');
-                return;
-            }
-
-            try {
-                const priceInCents = MOCK_STOCK_PRICES[symbol] || 0;
-                if (priceInCents === 0) {
-                    showMessage(`Could not find price for ${symbol}.`, 'error');
-                    return;
-                }
-
-                showMessage(`Attempting to buy ${quantity} of ${symbol}...`, 'info');
-                
-                // CRITICAL FIX: Convert JavaScript number to BigNumber for contract input
-                const quantityBigNumber = ethers.BigNumber.from(quantity);
-
-                // Call the contract function
-                const tx = await contract.buyStock(symbol, quantityBigNumber);
-                const receipt = await tx.wait();
-                
-                showMessage(`Buy successful! Transaction hash: ${receipt.transactionHash.substring(0, 10)}...`, 'success');
-                
-                // FIX: Update UI immediately after successful transaction
-                await updateAllData(); 
-
-            } catch (error) {
-                 console.error("Buy Transaction Failed:", error);
-                 if (error.code === 'UNPREDICTABLE_GAS_LIMIT' || (error.message && error.message.includes('execution reverted'))) {
-                    showMessage(`Buy failed: Execution reverted. This usually means you don't have enough virtual cash or your account is not registered.`, 'error');
-                } else if (error.code === 4001) {
-                    showMessage("Transaction rejected by user (MetaMask).", 'warning');
-                } else {
-                    showMessage(`An unexpected error occurred: ${error.message.substring(0, 80)}...`, 'error');
-                }
-            }
-        }
-        
-        // --- Initialization and Event Listeners ---
-        window.onload = function() {
-            // Populate stock select options
-            const stockSelect = document.getElementById('stock-select');
-            Object.keys(MOCK_STOCK_PRICES).forEach(symbol => {
-                const price = formatUSD(MOCK_STOCK_PRICES[symbol]);
-                const option = document.createElement('option');
-                option.value = symbol;
-                option.textContent = `${symbol} - ${price}`;
-                stockSelect.appendChild(option);
+    function calculateMockPortfolioValue() {
+        if (typeof ethers === 'undefined') {
+            let total = 0;
+            mockHoldings.forEach(h => {
+                const q = Number(h.quantity.toString ? h.quantity.toString() : h.quantity);
+                const price = MOCK_STOCK_PRICES[h.symbol] || 0;
+                total += q * price;
             });
+            return total;
+        }
+        let totalValue = ethers.BigNumber.from(0);
+        mockHoldings.forEach(holding => {
+            const symbol = holding.symbol;
+            const quantity = holding.quantity;
+            const currentPriceCents = MOCK_STOCK_PRICES[symbol] || 0;
+            if (currentPriceCents > 0) {
+                const priceBN = ethers.BigNumber.from(currentPriceCents);
+                const value = quantity.mul(priceBN);
+                totalValue = totalValue.add(value);
+            }
+        });
+        return totalValue;
+    }
 
-            // Set up all event listeners
-            document.getElementById('connect-wallet').addEventListener('click', connectWallet);
-            document.getElementById('load-contract').addEventListener('click', loadContract);
-            document.getElementById('buy-stock').addEventListener('click', handleBuy);
-            document.getElementById('sell-stock').addEventListener('click', handleSell);
-            document.getElementById('refresh-data').addEventListener('click', updateAllData);
-            document.getElementById('check-balance-btn').addEventListener('click', updateAllData);
+    function populateStockSelect() {
+        const select = document.getElementById('stock-select');
+        while (select.options.length > 1) select.remove(1);
+        Object.keys(MOCK_STOCK_PRICES).forEach(symbol => {
+            const price = MOCK_STOCK_PRICES[symbol];
+            const option = document.createElement('option');
+            option.value = symbol;
+            option.textContent = `${symbol} (${formatUSD(price)})`;
+            select.appendChild(option);
+        });
+    }
 
-            // Mock implementation for Register/Deposit/Switch
-            document.getElementById('register-account').addEventListener('click', async () => {
-                try {
-                    showMessage("Registering account...", 'info');
-                    const tx = await contract.registerAccount();
-                    await tx.wait();
-                    showMessage("Account registered successfully! You can now trade.", 'success');
-                    await updateAllData();
-                } catch(e) { 
-                    console.error(e);
-                    showMessage("Registration failed. Are you already registered? (Execution Reverted)", 'error'); 
-                }
+    // Ethers & Contract interactions
+    async function connectWallet() {
+        if (typeof window.ethereum === 'undefined') {
+            showMessage("MetaMask not detected. Please install MetaMask.", 'error');
+            return;
+        }
+        if (typeof ethers === 'undefined') {
+            showMessage("Ethers.js not loaded. Check CDN.", 'error');
+            console.error('ethers is undefined.'); 
+            return;
+        }
+
+        try {
+            const accounts = await window.ethereum.request({ method:'eth_requestAccounts' });
+            userAddress = accounts[0];
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+            signer = provider.getSigner();
+
+            document.getElementById('wallet-address').textContent = `${userAddress.substring(0,10)}...${userAddress.substring(userAddress.length - 6)}`;
+            const ethBalance = await provider.getBalance(userAddress);
+            document.getElementById('eth-balance').textContent = formatETH(ethBalance);
+
+            showMessage("Wallet connected successfully!", 'success');
+            document.getElementById('load-contract').disabled = false;
+            document.getElementById('connect-wallet').disabled = true;
+            document.getElementById('switch-sepolia').disabled = false;
+
+            // listeners
+            window.ethereum.on('chainChanged', (chainId) => {
+                showMessage(`Network changed (chainId: ${chainId}). Reloading...`, 'info');
+                setTimeout(() => window.location.reload(), 800);
             });
-
-            document.getElementById('deposit-cash').addEventListener('click', async () => {
-                try {
-                    showMessage("Depositing $500 (Requires 0.001 ETH as gas/fee)...", 'info');
-                    // MOCK: Sending a small amount of ETH just for the transaction fee simulation
-                    const tx = await contract.deposit({ value: ethers.utils.parseEther("0.001") });
-                    await tx.wait();
-                    showMessage("Deposit successful! Your contract cash balance should increase.", 'success');
-                    await updateAllData();
-                } catch(e) { 
-                    console.error(e);
-                    showMessage("Deposit failed. Ensure you are connected and registered.", 'error'); 
-                }
+            window.ethereum.on('accountsChanged', (accounts) => {
+                showMessage("Account changed. Reloading...", 'info');
+                setTimeout(() => window.location.reload(), 800);
             });
+        } catch (err) {
+            showMessage(`Wallet connection failed: ${err.message || err}`, 'error');
+            console.error(err);
+        }
+    }
 
-            document.getElementById('switch-sepolia').addEventListener('click', async () => {
-                try {
-                    await window.ethereum.request({
-                        method: 'wallet_switchEthereumChain',
-                        params: [{ chainId: '0xaa36a7' }], // Sepolia chain ID
-                    });
-                    showMessage("Switched to Sepolia! Please reload contract.", 'success');
-                } catch (switchError) {
-                    // This is the error code for an unrecognized chain ID
-                    if (switchError.code === 4902) {
-                        showMessage("Sepolia is not recognized by MetaMask. Please add it manually.", 'error');
-                    } else {
-                        showMessage(`Failed to switch network: ${switchError.message}`, 'error');
-                    }
-                }
-            });
-            
-            // Initial UI State
+    async function loadContract() {
+        if (!signer) {
+            showMessage("Please connect your wallet first.", 'error');
+            return;
+        }
+        if (typeof ethers === 'undefined') {
+            showMessage("Ethers.js missing.", 'error');
+            return;
+        }
+        try {
+            contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+            showMessage("Contract loaded successfully (mock).", 'success');
+            document.getElementById('load-contract').disabled = true;
+
+            // Populate stocks and enable controls (contract "loaded")
+            populateStockSelect();
             toggleTradingControls(true);
-            showMessage("Please connect your wallet and load the contract to begin.", 'info');
-        };
+            // Keep switch Sepolia enabled (user may still want it)
+            document.getElementById('switch-sepolia').disabled = false;
+
+            // Initial refresh (uses mock state)
+            await updateAllData();
+        } catch (err) {
+            showMessage(`Failed to load contract: ${err.message || err}`, 'error');
+            console.error(err);
+        }
+    }
+
+    async function updateAllData() {
+        // If no contract or not connected, don't run heavy UI updates
+        if (!contract || !userAddress) {
+            // still update holdings UI from mock if contract not present so user can see after register
+            // but keep controls disabled
+            // return early to avoid errors
+        }
+
+        // Compute portfolio value using mocks
+        const portfolioValue = calculateMockPortfolioValue();
+
+        // Update stats
+        document.getElementById('cash-balance').textContent = formatUSD(mockVirtualCashBalance);
+        document.getElementById('portfolio-value').textContent = formatUSD(portfolioValue);
+
+        // Update holdings table
+        const holdingsBody = document.getElementById('holdings-table-body');
+        holdingsBody.innerHTML = '';
+
+        if (!mockHoldings || mockHoldings.length === 0) {
+            holdingsBody.innerHTML = `<tr><td colspan="4"><div class="empty-holdings text-center py-10 text-gray-500"><i class="fas fa-box-open"></i><p>No holdings yet. Start trading to build your portfolio.</p></div></td></tr>`;
+        } else {
+            mockHoldings.forEach(holding => {
+                const symbol = holding.symbol;
+                const quantity = holding.quantity;
+                const purchasePrice = holding.purchasePrice;
+                const currentPrice = (typeof ethers !== 'undefined') ? ethers.BigNumber.from(MOCK_STOCK_PRICES[symbol]) : MOCK_STOCK_PRICES[symbol];
+                const currentValue = (typeof ethers !== 'undefined') ? quantity.mul(currentPrice) : (Number(quantity.toString ? quantity.toString() : quantity) * currentPrice);
+                const costBasis = (typeof ethers !== 'undefined') ? quantity.mul(purchasePrice) : (Number(quantity.toString ? quantity.toString() : quantity) * Number(purchasePrice));
+                const pnl = (typeof ethers !== 'undefined') ? currentValue.sub(costBasis) : (currentValue - costBasis);
+                const isPositive = (typeof ethers !== 'undefined') ? pnl.gte(0) : pnl >= 0;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${symbol}</td><td>${quantity.toString ? quantity.toString() : quantity}</td><td>${formatUSD(currentPrice)}</td><td class="${isPositive ? 'positive' : 'negative'}">${formatUSD(currentValue)} <span class="text-xs">(${isPositive ? '+' : ''}${formatUSD(pnl)})</span></td>`;
+                holdingsBody.appendChild(row);
+            });
+        }
+
+        // Ensure controls reflect registration state (deposit only when registered)
+        toggleTradingControls(Boolean(contract)); // enable controls if contract loaded
+        showMessage(`Data refreshed. Registered: ${mockIsRegistered}`, 'info');
+    }
+
+    async function registerAccount() {
+        if (mockIsRegistered) { showMessage("Account already registered.", 'info'); return; }
+        try {
+            showMessage("Registering account (mock)...", 'info');
+            await new Promise(r => setTimeout(r, 1200));
+            mockIsRegistered = true;
+            showMessage("Account registered. You may deposit cash now.", 'success');
+            // After registration allow deposit
+            toggleTradingControls(Boolean(contract));
+            await updateAllData();
+        } catch (err) {
+            showMessage(`Registration failed: ${err.message || err}`, 'error');
+        }
+    }
+
+    async function depositCash() {
+        if (!mockIsRegistered) { showMessage("Please register first.", 'error'); return; }
+        try {
+            const depositAmountCents = (typeof ethers !== 'undefined') ? ethers.BigNumber.from(50000) : 50000;
+            showMessage("Simulating $500 deposit (mock)...", 'info');
+            await new Promise(r => setTimeout(r, 1200));
+            if (typeof ethers !== 'undefined') mockVirtualCashBalance = mockVirtualCashBalance.add(depositAmountCents);
+            else mockVirtualCashBalance += depositAmountCents;
+            showMessage("$500 deposited to virtual balance.", 'success');
+            await updateAllData();
+        } catch (err) {
+            showMessage(`Deposit failed: ${err.message || err}`, 'error');
+        }
+    }
+
+    async function buyStock() {
+        const symbol = document.getElementById('stock-select').value;
+        const quantityInput = document.getElementById('quantity-input').value;
+        const quantity = parseInt(quantityInput);
+        if (!symbol || !quantity || quantity <= 0 || !mockIsRegistered) { showMessage("Select stock and valid quantity (and register).", 'error'); return; }
+
+        try {
+            const priceCents = (typeof ethers !== 'undefined') ? ethers.BigNumber.from(MOCK_STOCK_PRICES[symbol]) : MOCK_STOCK_PRICES[symbol];
+            const totalCost = (typeof ethers !== 'undefined') ? priceCents.mul(quantity) : priceCents * quantity;
+
+            const enough = (typeof ethers !== 'undefined') ? !(totalCost.gt(mockVirtualCashBalance)) : (mockVirtualCashBalance >= totalCost);
+            if (!enough) { showMessage(`Insufficient virtual cash: need ${formatUSD(totalCost)}.`, 'error'); return; }
+
+            showMessage(`Buying ${quantity} ${symbol} (mock)...`, 'info');
+            await new Promise(r => setTimeout(r, 1500));
+
+            // Update cash
+            if (typeof ethers !== 'undefined') mockVirtualCashBalance = mockVirtualCashBalance.sub(totalCost);
+            else mockVirtualCashBalance -= totalCost;
+
+            // Update holdings
+            const idx = mockHoldings.findIndex(h => h.symbol === symbol);
+            const qtyBN = (typeof ethers !== 'undefined') ? ethers.BigNumber.from(quantity) : quantity;
+            if (idx > -1) {
+                const existing = mockHoldings[idx];
+                existing.quantity = (typeof ethers !== 'undefined') ? existing.quantity.add(qtyBN) : existing.quantity + qtyBN;
+            } else {
+                mockHoldings.push({ symbol, quantity: qtyBN, purchasePrice: priceCents });
+            }
+
+            showMessage(`Successfully bought ${quantity} ${symbol}!`, 'success');
+            await updateAllData();
+        } catch (err) {
+            showMessage(`Buy failed: ${err.message || err}`, 'error');
+        }
+    }
+
+    async function sellStock() {
+        const symbol = document.getElementById('stock-select').value;
+        const quantityInput = document.getElementById('quantity-input').value;
+        const quantity = parseInt(quantityInput);
+        if (!symbol || !quantity || quantity <= 0 || !mockIsRegistered) { showMessage("Select stock and valid quantity (and register).", 'error'); return; }
+
+        const idx = mockHoldings.findIndex(h => h.symbol === symbol);
+        if (idx === -1) { showMessage(`No holdings for ${symbol}.`, 'error'); return; }
+
+        const existing = mockHoldings[idx];
+        const quantityBN = (typeof ethers !== 'undefined') ? ethers.BigNumber.from(quantity) : quantity;
+        const haveEnough = (typeof ethers !== 'undefined') ? !(quantityBN.gt(existing.quantity)) : (existing.quantity >= quantity);
+        if (!haveEnough) { showMessage(`You only hold ${existing.quantity.toString ? existing.quantity.toString() : existing.quantity} shares.`, 'error'); return; }
+
+        try {
+            const priceCents = (typeof ethers !== 'undefined') ? ethers.BigNumber.from(MOCK_STOCK_PRICES[symbol]) : MOCK_STOCK_PRICES[symbol];
+            const totalSale = (typeof ethers !== 'undefined') ? priceCents.mul(quantity) : priceCents * quantity;
+
+            showMessage(`Selling ${quantity} ${symbol} (mock)...`, 'info');
+            await new Promise(r => setTimeout(r, 1500));
+
+            if (typeof ethers !== 'undefined') mockVirtualCashBalance = mockVirtualCashBalance.add(totalSale);
+            else mockVirtualCashBalance += totalSale;
+
+            // subtract from holding
+            if (typeof ethers !== 'undefined') existing.quantity = existing.quantity.sub(quantityBN);
+            else existing.quantity -= quantityBN;
+
+            if ((typeof ethers !== 'undefined' && existing.quantity.isZero()) || (!existing.quantity)) {
+                mockHoldings.splice(idx, 1);
+            }
+
+            showMessage(`Sold ${quantity} ${symbol}!`, 'success');
+            await updateAllData();
+        } catch (err) {
+            showMessage(`Sell failed: ${err.message || err}`, 'error');
+        }
+    }
+
+    async function switchSepoliaChain() {
+        if (typeof window.ethereum === 'undefined') { showMessage("MetaMask not detected.", 'error'); return; }
+        const sepoliaChainId = '0xaa36a7';
+        try {
+            await window.ethereum.request({ method: 'wallet_switchEthereumChain', params:[{ chainId: sepoliaChainId }] });
+            showMessage("Switched to Sepolia. Click Load Contract.", 'success');
+        } catch (err) {
+            showMessage(`Switch failed: ${err.message || err}`, 'error');
+        }
+    }
+
+    async function resetPortfolio() {
+        if (!mockIsRegistered) { showMessage("Not registered.", 'info'); return; }
+        try {
+            showMessage("Resetting portfolio (mock)...", 'info');
+            await new Promise(r => setTimeout(r, 1000));
+            mockVirtualCashBalance = (typeof ethers !== 'undefined') ? ethers.BigNumber.from(0) : 0;
+            mockHoldings = [];
+            mockIsRegistered = true;
+            showMessage("Portfolio reset. Deposit to start trading.", 'success');
+            await updateAllData();
+        } catch (err) {
+            showMessage(`Reset failed: ${err.message || err}`, 'error');
+        }
+    }
+
+    // Initialization & listeners
+    window.onload = function() {
+        document.getElementById('connect-wallet').addEventListener('click', connectWallet);
+        document.getElementById('load-contract').addEventListener('click', loadContract);
+        document.getElementById('refresh-data').addEventListener('click', updateAllData);
+        document.getElementById('switch-sepolia').addEventListener('click', switchSepoliaChain);
+
+        document.getElementById('register-account').addEventListener('click', registerAccount);
+        document.getElementById('deposit-cash').addEventListener('click', depositCash);
+        document.getElementById('buy-stock').addEventListener('click', buyStock);
+        document.getElementById('sell-stock').addEventListener('click', sellStock);
+        document.getElementById('check-balance-btn').addEventListener('click', updateAllData);
+        document.getElementById('reset-portfolio-btn').addEventListener('click', resetPortfolio);
+
+        // initially keep everything disabled until contract loaded
+        toggleTradingControls(false);
+
+        showMessage("Open console (F12) if anything doesn't work. Connect MetaMask to begin.", 'info');
+    };
     </script>
 </body>
 </html>
